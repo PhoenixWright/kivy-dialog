@@ -1,0 +1,42 @@
+<Conversation@BoxLayout>:
+    current_name: 'Character Name'
+    current_text: 'Current Dialog'
+
+    # using __self__ so that we can add/remove these widgets at will
+    current_name_widget: actor_name.__self__
+    current_text_widget: dialog.__self__
+
+    # override for target actor name
+    current_name_override: None
+
+    orientation: 'vertical'
+
+    Button:
+        id: actor_name
+        halign: 'justify'
+        size_hint_y: 0.2
+        text: root.current_name_override if root.current_name_override is not None else root.current_name
+
+    Button:
+        id: dialog
+        padding: [5, 5]
+        halign: 'justify'
+        valign: 'top'
+        text: root.current_text
+
+
+<ConversationContainer@ModalView>:
+    conversation: conversation
+    size: root.size
+
+    GridLayout:
+        rows: 2
+        orientation: 'vertical'
+        padding: [5, 5]
+
+        BoxLayout:
+            size_hint_y: 0.7
+
+        Conversation:
+            id: conversation
+            size_hint_y: 0.3
