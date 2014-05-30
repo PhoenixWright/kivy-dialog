@@ -1,12 +1,12 @@
 import yaml
 from kivy.clock import Clock
 from kivy.logger import Logger
-from kivy.properties import DictProperty, ObjectProperty, StringProperty
+from kivy.properties import DictProperty, NumericProperty, ObjectProperty, StringProperty
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
 from kivy.uix.modalview import ModalView
 
-from kivydialoglib.chatmap import ChatMap
+from chatmap import ChatMap
 
 
 class DialogChoices(BoxLayout):
@@ -14,14 +14,6 @@ class DialogChoices(BoxLayout):
     def __init__(self, **kwargs):
         super(DialogChoices, self).__init__(**kwargs)
         self.orientation = 'vertical'
-
-
-class ConversationContainer(ModalView):
-    conversation = ObjectProperty(None)
-
-    def __init__(self, conversation_id, **kwargs):
-        super(ConversationContainer, self).__init__(**kwargs)
-        self.conversation.conversation_id = conversation_id
 
 
 class Conversation(BoxLayout):
@@ -35,33 +27,64 @@ class Conversation(BoxLayout):
 
     current_choices = None
 
-
     # normal 'list of text' conversation
     conversations = ObjectProperty()
 
     # chat_mapper variables
     chat_map = ObjectProperty()
     current_nodes = []
-    conversation_id = 1
     current_node_id = 0
 
     # used to replace {variables} with words
     word_overrides = DictProperty()  # variables -> replacements
 
+    # intializers
+    chat_map_file_path = StringProperty()
+    conversation_id = NumericProperty()
+
     def __init__(self, **kwargs):
         super(Conversation, self).__init__(**kwargs)
-        self.chat_map = ChatMap('assets/section8chatmap.json')
 
-        with open('assets/conversations.yaml') as f:
-            loaded_yaml = yaml.load(f.read())
-            self.conversations = loaded_yaml['conversations']
+        try:
+            with open('assets/conversations.yaml') as f:
+                loaded_yaml = yaml.load(f.read())
+                self.conversations = loaded_yaml['conversations']
+        except:
+            pass
 
         self.current_dialog_node_id = 0
 
-        # the object's properties are not available here, but they will be later
-        Clock.schedule_once(lambda dt: self.update_nodes())
+        # initialize after the file path has been bound
+        Clock.schedule_once(lambda dt: self.initialize())
 
         self.register_event_type('on_complete')
+
+    def initialize(self):
+        # find a parent with a chat map file path if there is one
+        container = None
+        widget = self.parent
+        while widget:
+            if hasattr(widget, 'chat_map_file_path') or hasattr(widget, 'conversation_id'):
+                container = widget
+                break
+            widget = widget.parent
+            if widget == widget.parent:
+                # pygame windows are apparently their own parents
+                break
+
+        # inherit the chat map file path and conversation id from the container
+        if container:
+            file_path = getattr(container, 'chat_map_file_path', None)
+            if file_path:
+                self.chat_map_file_path = container.chat_map_file_path
+            conversation_id = getattr(container, 'conversation_id', None)
+            if conversation_id:
+                self.conversation_id = conversation_id
+
+        # read in the chatmap
+        self.chat_map = ChatMap(self.chat_map_file_path)
+
+        self.update_nodes()
 
     def on_complete(self):
         pass
@@ -236,3 +259,15 @@ class Conversation(BoxLayout):
 
         # notify any listeners that the conversation is over
         self.dispatch('on_complete')
+
+
+class ConversationContainer(ModalView):
+    chat_map_file_path = StringProperty()
+    conversation_id = NumericProperty()
+
+    conversation = ObjectProperty()
+
+    def __init__(self, chat_map_file_path='', conversation_id=0, **kwargs):
+        super(ConversationContainer, self).__init__(**kwargs)
+        self.chat_map_file_path = chat_map_file_path
+        self.conversation_id = conversation_id
