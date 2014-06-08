@@ -1,12 +1,47 @@
 import yaml
 from kivy.clock import Clock
 from kivy.logger import Logger
-from kivy.properties import DictProperty, NumericProperty, ObjectProperty, StringProperty
+from kivy.properties import DictProperty, ListProperty, NumericProperty, ObjectProperty, StringProperty
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
 from kivy.uix.modalview import ModalView
 
 from chatmap import ChatMap
+
+
+class CutsceneText(ModalView):
+    current_text = StringProperty()
+    text_list = ListProperty()
+
+    # automatically progress through the text
+    text_timer = NumericProperty(3.0)
+
+    def __init__(self, text_list=None, **kwargs):
+        """
+        :param text_list: A list of strings to show one after the other.
+        :type text_list: list[str]
+        """
+        super(CutsceneText, self).__init__(**kwargs)
+        self.register_event_type('on_complete')
+
+        if text_list:
+            self.text_list.extend(text_list)
+        self.current_text = self.text_list.pop(0)
+        Clock.schedule_once(self.next_text, self.text_timer)
+
+    def on_complete(self):
+        pass
+
+    def next_text(self, *args):
+        if self.text_list:
+            self.current_text = self.text_list.pop(0)
+            Clock.schedule_once(self.next_text, self.text_timer)
+        else:
+            self.dispatch('on_complete')
+            self.dismiss()
+
+    def on_touch_down(self, touch):
+        pass
 
 
 class DialogChoices(BoxLayout):
