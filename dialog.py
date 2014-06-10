@@ -74,52 +74,21 @@ class Conversation(BoxLayout):
     word_overrides = DictProperty()  # variables -> replacements
 
     # intializers
-    chat_map_file_path = StringProperty()
-    conversation_id = NumericProperty()
+    conversation_id = ObjectProperty()
 
     def __init__(self, **kwargs):
         super(Conversation, self).__init__(**kwargs)
 
-        try:
-            with open('assets/conversations.yaml') as f:
-                loaded_yaml = yaml.load(f.read())
-                self.conversations = loaded_yaml['conversations']
-        except:
-            pass
+        with open('assets/conversations.yaml') as f:
+            loaded_yaml = yaml.load(f.read())
+            self.conversations = loaded_yaml['conversations']
+
+        # load the chat map
+        self.chat_map = ChatMap('assets/chatmap.json')
 
         self.current_dialog_node_id = 0
 
-        # initialize after the file path has been bound
-        Clock.schedule_once(lambda dt: self.initialize())
-
         self.register_event_type('on_complete')
-
-    def initialize(self):
-        # find a parent with a chat map file path if there is one
-        container = None
-        widget = self.parent
-        while widget:
-            if hasattr(widget, 'chat_map_file_path') or hasattr(widget, 'conversation_id'):
-                container = widget
-                break
-            widget = widget.parent
-            if widget == widget.parent:
-                # pygame windows are apparently their own parents
-                break
-
-        # inherit the chat map file path and conversation id from the container
-        if container:
-            file_path = getattr(container, 'chat_map_file_path', None)
-            if file_path:
-                self.chat_map_file_path = container.chat_map_file_path
-            conversation_id = getattr(container, 'conversation_id', None)
-            if conversation_id:
-                self.conversation_id = conversation_id
-
-        # read in the chatmap
-        self.chat_map = ChatMap(self.chat_map_file_path)
-
-        self.update_nodes()
 
     def on_complete(self):
         pass
@@ -298,7 +267,7 @@ class Conversation(BoxLayout):
 
 class ConversationContainer(ModalView):
     chat_map_file_path = StringProperty()
-    conversation_id = NumericProperty()
+    conversation_id = ObjectProperty()
 
     conversation = ObjectProperty()
 
@@ -306,3 +275,5 @@ class ConversationContainer(ModalView):
         super(ConversationContainer, self).__init__(**kwargs)
         self.chat_map_file_path = chat_map_file_path
         self.conversation_id = conversation_id
+
+        Clock.schedule_once(lambda dt: self.conversation.change_conversation(self.conversation_id))
