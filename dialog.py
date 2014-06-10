@@ -181,14 +181,30 @@ class Conversation(BoxLayout):
                 self.current_name = self.chat_map.actors[current_node.actor].name
                 self.current_text_widget.text = self._format_text(current_node.dialogue_text)
             else:
-                # set the current name to whatever is in the conversation node
-                # name attr if it exists
-                if 'name' in current_node:
-                    self.current_name = current_node['name']
-                if 'text' in current_node:
-                    self.current_text_widget.text = current_node['text']
+                if 'choice' in current_node:
+                    self.remove_widget(self.current_name_widget)
+                    self.remove_widget(self.current_text_widget)
+                    self.current_choices = DialogChoices()
+                    for option_text in current_node['choice']:
+                        button = Button(text=option_text)
+                        button.bind(on_press=lambda instance: self.button_pressed(instance))
+                        self.current_choices.add_widget(button)
+
+                    self.add_widget(self.current_choices)
                 else:
-                    self.current_text_widget.text = current_node
+                    # remove the choices if they exist
+                    if self.current_choices:
+                        self.remove_widget(self.current_choices)
+                        self.current_choices = None
+
+                    if 'name' in current_node:
+                        # the current speaker is being changed
+                        # there should be a text variable too
+                        self.current_name = current_node['name']
+                        self.current_text_widget.text = current_node['text']
+
+                    else:
+                        self.current_text_widget.text = current_node
 
     def next(self):
         # find out if we're using chatmapper for this convo
@@ -229,6 +245,14 @@ class Conversation(BoxLayout):
 
     def button_pressed(self, instance):
         Logger.debug('Conversation: Button pressed')
+        chat_mapper = isinstance(self.conversation_id, int)
+
+        if not chat_mapper:
+            Logger.debug('Conversation: Not in a chat mapper convo, not doing anything fancy')
+            self.current_node_id += 1
+            self.update_nodes()
+            return
+
         for node in self.current_nodes:
             if not str(node.id) == instance.id:
                 continue
