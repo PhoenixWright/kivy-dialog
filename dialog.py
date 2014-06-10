@@ -79,9 +79,12 @@ class Conversation(BoxLayout):
     def __init__(self, **kwargs):
         super(Conversation, self).__init__(**kwargs)
 
-        with open('assets/conversations.yaml') as f:
-            loaded_yaml = yaml.load(f.read())
-            self.conversations = loaded_yaml['conversations']
+        try:
+            with open('assets/conversations.yaml') as f:
+                loaded_yaml = yaml.load(f.read())
+                self.conversations = loaded_yaml['conversations']
+        except:
+            pass
 
         # load the chat map
         self.chat_map = ChatMap('assets/chatmap.json')
@@ -266,14 +269,12 @@ class Conversation(BoxLayout):
 
 
 class ConversationContainer(ModalView):
-    chat_map_file_path = StringProperty()
     conversation_id = ObjectProperty()
 
     conversation = ObjectProperty()
 
     def __init__(self, chat_map_file_path='', conversation_id=0, **kwargs):
         super(ConversationContainer, self).__init__(**kwargs)
-        self.chat_map_file_path = chat_map_file_path
         self.conversation_id = conversation_id
 
         Clock.schedule_once(lambda dt: self.conversation.change_conversation(self.conversation_id))
