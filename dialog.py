@@ -183,9 +183,10 @@ class Conversation(BoxLayout):
             else:
                 # set the current name to whatever is in the conversation node
                 # name attr if it exists
-                self.current_name = getattr(current_node, 'name', '')
-                if hasattr(current_node, 'text'):
-                    self.current_text_widget.text = current_node.text
+                if 'name' in current_node:
+                    self.current_name = current_node['name']
+                if 'text' in current_node:
+                    self.current_text_widget.text = current_node['text']
                 else:
                     self.current_text_widget.text = current_node
 
