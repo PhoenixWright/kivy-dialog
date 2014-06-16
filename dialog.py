@@ -199,10 +199,9 @@ class Conversation(BoxLayout):
 
                     if 'name' in current_node:
                         # the current speaker is being changed
-                        # there should be a text variable too
+                        # update the name and go to the next node
                         self.current_name = current_node['name']
-                        self.current_text_widget.text = current_node['text']
-
+                        self.next()
                     else:
                         self.current_text_widget.text = current_node
 
