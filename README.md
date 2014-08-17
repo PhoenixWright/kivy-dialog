@@ -1,4 +1,5 @@
 kivy-dialog-lib
 ===============
 
-A Kivy ChatMapper-based modal and widget for displaying and progressing through dialog.
+A Kivy dialog library for parsing Twine json and displaying it in interactive
+dialog boxes.
