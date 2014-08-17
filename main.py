@@ -1,5 +1,5 @@
 from kivy.app import App
-from dialog import ConversationContainer
+from conversation import ConversationContainer
 
 class DialogApp(App):
     def build(self):

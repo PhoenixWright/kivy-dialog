@@ -78,7 +78,10 @@ class TwineDialog(Dialog):
         next_node_text = re.sub(self.choice_regex, '', next_node_text).strip()
 
         # split the text by double newlines
-        next_node_text = next_node_text.split('\n\n')
+        if next_node_text:
+            next_node_text = next_node_text.split('\n\n')
+        else:
+            next_node_text = []
 
         # parse the choices out of the text
         choices = self._parse_choices(next_node.text)
