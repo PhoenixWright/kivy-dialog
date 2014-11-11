@@ -120,17 +120,24 @@ class Conversation(BoxLayout):
             if self.current_choices:
                 self.remove_widget(self.current_choices)
                 self.current_choices = None
-            Logger.debug('Conversation: Displaying choices')
 
-            self.current_choices = DialogChoices()
+            # if there are choices available, display them, otherwise loop the conversation
+            if self.current_node.choices:
+                Logger.debug('Conversation: Displaying choices')
+                self.current_choices = DialogChoices()
 
-            for choice_id, choice_text in self.current_node.choices.iteritems():
-                button = Button(text=choice_text)
-                button.id = choice_id
-                button.bind(on_press=lambda instance: self.button_pressed(instance))
-                self.current_choices.add_widget(button)
+                for choice_id, choice_text in self.current_node.choices.iteritems():
+                    button = Button(text=choice_text)
+                    button.id = choice_id
+                    button.bind(on_press=lambda instance: self.button_pressed(instance))
+                    self.current_choices.add_widget(button)
 
-            self.add_widget(self.current_choices)
+                self.add_widget(self.current_choices)
+            else:
+                self.dispatch('on_complete')
+                self.current_node = self.dialog.next(self.conversation_id)
+                self.current_text_index = 0
+                self.update_nodes()
         else:
             # we're displaying text, remove the current choices if any
             if self.current_choices:
