@@ -149,7 +149,7 @@ class Conversation(BoxLayout):
                 self.add_widget(self.current_name_widget)
                 self.add_widget(self.current_text_widget)
 
-            self.current_text_widget.text = self.current_node.text[self.current_text_index]
+            self.current_text_widget.text = self._format_text(self.current_node.text[self.current_text_index])
 
     def next(self):
         self.current_text_index += 1
